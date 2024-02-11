@@ -106,6 +106,8 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
 
     cache: Optional["BaseCache"] = None
     """Cache for any LLM model"""
+    use_cache: Optional[bool] = False
+    """Use cache for response"""
     verbose: bool = Field(default_factory=_get_verbosity)
     """Whether to print out response text."""
     callbacks: Callbacks = Field(default=None, exclude=True)
