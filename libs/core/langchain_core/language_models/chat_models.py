@@ -50,6 +50,7 @@ from langchain_core.runnables.config import ensure_config, run_in_executor
 
 if TYPE_CHECKING:
     from langchain_core.runnables import RunnableConfig
+    from langchain_core.caches import BaseCache
 
 
 def _get_verbosity() -> bool:
@@ -103,8 +104,8 @@ async def agenerate_from_stream(
 class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
     """Base class for Chat models."""
 
-    cache: Optional[bool] = None
-    """Whether to cache the response."""
+    cache: Optional["BaseCache"] = None
+    """Cache for any LLM model"""
     verbose: bool = Field(default_factory=_get_verbosity)
     """Whether to print out response text."""
     callbacks: Callbacks = Field(default=None, exclude=True)
@@ -565,14 +566,8 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
         new_arg_supported = inspect.signature(self._generate).parameters.get(
             "run_manager"
         )
-        disregard_cache = self.cache is not None and not self.cache
-        llm_cache = get_llm_cache()
-        if llm_cache is None or disregard_cache:
-            # This happens when langchain.cache is None, but self.cache is True
-            if self.cache is not None and self.cache:
-                raise ValueError(
-                    "Asked to cache, but no cache found at `langchain.cache`."
-                )
+        llm_cache = self.cache
+        if llm_cache is None:
             if new_arg_supported:
                 return self._generate(
                     messages, stop=stop, run_manager=run_manager, **kwargs
@@ -605,14 +600,8 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
         new_arg_supported = inspect.signature(self._agenerate).parameters.get(
             "run_manager"
         )
-        disregard_cache = self.cache is not None and not self.cache
-        llm_cache = get_llm_cache()
-        if llm_cache is None or disregard_cache:
-            # This happens when langchain.cache is None, but self.cache is True
-            if self.cache is not None and self.cache:
-                raise ValueError(
-                    "Asked to cache, but no cache found at `langchain.cache`."
-                )
+        llm_cache = self.cache
+        if llm_cache is None:
             if new_arg_supported:
                 return await self._agenerate(
                     messages, stop=stop, run_manager=run_manager, **kwargs

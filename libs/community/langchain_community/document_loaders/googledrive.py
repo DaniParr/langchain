@@ -24,6 +24,8 @@ class GoogleDriveLoader(BaseLoader, BaseModel):
 
     service_account_key: Path = Path.home() / ".credentials" / "keys.json"
     """Path to the service account key file."""
+    credentials_with_subject: Optional[str] = None
+    """Email of internal user to emulate with service"""
     credentials_path: Path = Path.home() / ".credentials" / "credentials.json"
     """Path to the credentials file."""
     token_path: Path = Path.home() / ".credentials" / "token.json"
@@ -121,9 +123,12 @@ class GoogleDriveLoader(BaseLoader, BaseModel):
 
         creds = None
         if self.service_account_key.exists():
-            return service_account.Credentials.from_service_account_file(
+            creds = service_account.Credentials.from_service_account_file(
                 str(self.service_account_key), scopes=SCOPES
             )
+            if self.credentials_with_subject:
+                creds = creds.with_subject(self.credentials_with_subject)
+            return creds
 
         if self.token_path.exists():
             creds = Credentials.from_authorized_user_file(str(self.token_path), SCOPES)
