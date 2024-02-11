@@ -569,7 +569,7 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
             "run_manager"
         )
         llm_cache = self.cache
-        if llm_cache is None and self.use_cache:
+        if llm_cache is None and not self.use_cache:
             if new_arg_supported:
                 return self._generate(
                     messages, stop=stop, run_manager=run_manager, **kwargs
@@ -603,7 +603,7 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
             "run_manager"
         )
         llm_cache = self.cache
-        if llm_cache is None and self.use_cache:
+        if llm_cache is None and not self.use_cache:
             if new_arg_supported:
                 return await self._agenerate(
                     messages, stop=stop, run_manager=run_manager, **kwargs
