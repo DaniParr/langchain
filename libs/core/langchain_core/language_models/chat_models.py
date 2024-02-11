@@ -106,8 +106,8 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
 
     cache: Optional["BaseCache"] = None
     """Cache for any LLM model"""
-    use_cache: Optional[bool] = False
-    """Use cache for response"""
+    use_cache: Optional[bool] = True
+    """Whether to use cache for response"""
     verbose: bool = Field(default_factory=_get_verbosity)
     """Whether to print out response text."""
     callbacks: Callbacks = Field(default=None, exclude=True)
@@ -569,7 +569,7 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
             "run_manager"
         )
         llm_cache = self.cache
-        if llm_cache is None:
+        if llm_cache is None and self.use_cache:
             if new_arg_supported:
                 return self._generate(
                     messages, stop=stop, run_manager=run_manager, **kwargs
@@ -603,7 +603,7 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
             "run_manager"
         )
         llm_cache = self.cache
-        if llm_cache is None:
+        if llm_cache is None and self.use_cache:
             if new_arg_supported:
                 return await self._agenerate(
                     messages, stop=stop, run_manager=run_manager, **kwargs
